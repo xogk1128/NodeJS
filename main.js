@@ -3,8 +3,9 @@ var fs = require('fs');
 var url = require('url');
 var qs = require('node:querystring');
 
-function templateHTML(title, list, body, control){
-        /*
+var template = {
+  HTML : function(title, list, body, control){
+     /*
           var list = `
             <ul>
             <li><a href="/?id=HTML">HTML</a></li>
@@ -12,7 +13,7 @@ function templateHTML(title, list, body, control){
             <li><a href="/?id=JavaScript">JavaScript</a></li>
             </ul>`;
          */
-  return  `
+    return  `
   <!doctype html>
   <html>
   <head>
@@ -27,20 +28,21 @@ function templateHTML(title, list, body, control){
   </body>
   </html>
   `;
-}
-
-function templateList(filelist){
-  var list = '<ul>';
-
-  var i=0;
-  while(i<filelist.length){
-    list += `<li><a href="/?id=${filelist[i]}">${filelist[i]}</a></li>`;
-    i++;
+  },
+  List : function(filelist){
+    var list = '<ul>';
+  
+    var i=0;
+    while(i<filelist.length){
+      list += `<li><a href="/?id=${filelist[i]}">${filelist[i]}</a></li>`;
+      i++;
+    }
+  
+    list += '</ul>';
+    return list;
   }
-
-  list += '</ul>';
-  return list;
 }
+
 
 var app = http.createServer(function(request,response){
     var _url = request.url;
@@ -55,9 +57,9 @@ var app = http.createServer(function(request,response){
           var title = 'Welcome';
           var description = 'Hello Nodejs';
           
-          var list = templateList(filelist);
+          var list = template.List(filelist);
 
-          var template = templateHTML(title, list,
+          var template = template.HTML(title, list,
              `<h2>${title}</h2><p>${description}</p>`,
              `<a href = "/create">create</a>`);
 
@@ -70,10 +72,10 @@ var app = http.createServer(function(request,response){
           fs.readFile(`data/${queryData.id}`, 'utf8', function(err, description){
             
             //data폴더의 파일들 가져와서 출력
-            var list = templateList(filelist);
+            var list = template.List(filelist);
             
             var title = queryData.id;
-            var template = templateHTML(title, list, `<h2>${title}</h2><p>${description}</p>`,
+            var template = template.HTML(title, list, `<h2>${title}</h2><p>${description}</p>`,
             `<a href = "/create">create</a>
             <a href = "/update?id=${title}"> updata</a>
             <form action="/delete_process" mathod="post">
@@ -91,9 +93,9 @@ var app = http.createServer(function(request,response){
       fs.readdir('data', 'utf8', function(error, filelist){
         var title = 'WEB - create';
         var description = 'Hello Nodejs';
-        var list = templateList(filelist);
+        var list = template.List(filelist);
 
-        var template = templateHTML(title, list,
+        var template = template.HTML(title, list,
            `
           <form action="http://localhost:3000/create_process">
            <p><input type="text" name="title" placeholder="title"></p>
@@ -132,12 +134,12 @@ var app = http.createServer(function(request,response){
         fs.readFile(`data/${queryData.id}`, 'utf8', function(err, description){
           
           //data폴더의 파일들 가져와서 출력
-          var list = templateList(filelist);
+          var list = template.List(filelist);
           
           var title = queryData.id;
 
           //사용자가 수정을 할 때 title의 내용을 바꾸면 수정하려는 파일과 이름이 달라지기때문에 불러오지 못함
-          var template = templateHTML(title, list, 
+          var template = template.HTML(title, list, 
           `
           <form action="/update_process">
             <input type="hidden" name = "id" value = "${title}">
