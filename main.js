@@ -2,47 +2,7 @@ var http = require('http');
 var fs = require('fs');
 var url = require('url');
 var qs = require('node:querystring');
-
-var template = {
-  HTML : function(title, list, body, control){
-     /*
-          var list = `
-            <ul>
-            <li><a href="/?id=HTML">HTML</a></li>
-            <li><a href="/?id=CSS">CSS</a></li>
-            <li><a href="/?id=JavaScript">JavaScript</a></li>
-            </ul>`;
-         */
-    return  `
-  <!doctype html>
-  <html>
-  <head>
-    <title>WEB1 - ${title}</title>
-    <meta charset="utf-8">
-  </head>
-  <body>
-    <h1><a href="/">WEB</a></h1>
-    ${list}
-    ${control}
-    ${body}
-  </body>
-  </html>
-  `;
-  },
-  List : function(filelist){
-    var list = '<ul>';
-  
-    var i=0;
-    while(i<filelist.length){
-      list += `<li><a href="/?id=${filelist[i]}">${filelist[i]}</a></li>`;
-      i++;
-    }
-  
-    list += '</ul>';
-    return list;
-  }
-}
-
+var template = require('./lib/template.js');
 
 var app = http.createServer(function(request,response){
     var _url = request.url;
@@ -59,12 +19,12 @@ var app = http.createServer(function(request,response){
           
           var list = template.List(filelist);
 
-          var template = template.HTML(title, list,
+          var html = template.HTML(title, list,
              `<h2>${title}</h2><p>${description}</p>`,
              `<a href = "/create">create</a>`);
 
           response.writeHead(200);
-          response.end(template);
+          response.end(html);
         });
           
       } else { //id가 있는 경우
@@ -75,7 +35,7 @@ var app = http.createServer(function(request,response){
             var list = template.List(filelist);
             
             var title = queryData.id;
-            var template = template.HTML(title, list, `<h2>${title}</h2><p>${description}</p>`,
+            var html = template.HTML(title, list, `<h2>${title}</h2><p>${description}</p>`,
             `<a href = "/create">create</a>
             <a href = "/update?id=${title}"> updata</a>
             <form action="/delete_process" mathod="post">
@@ -84,7 +44,7 @@ var app = http.createServer(function(request,response){
             </form>
             `);
             response.writeHead(200);
-            response.end(template);
+            response.end(html);
           });
         });
       }
@@ -95,7 +55,7 @@ var app = http.createServer(function(request,response){
         var description = 'Hello Nodejs';
         var list = template.List(filelist);
 
-        var template = template.HTML(title, list,
+        var html = template.HTML(title, list,
            `
           <form action="http://localhost:3000/create_process">
            <p><input type="text" name="title" placeholder="title"></p>
@@ -109,7 +69,7 @@ var app = http.createServer(function(request,response){
            `,'');
 
         response.writeHead(200);
-        response.end(template);
+        response.end(html);
       });
       // 전송하였을 때
     }else if(pathname === '/create_process'){
@@ -139,7 +99,7 @@ var app = http.createServer(function(request,response){
           var title = queryData.id;
 
           //사용자가 수정을 할 때 title의 내용을 바꾸면 수정하려는 파일과 이름이 달라지기때문에 불러오지 못함
-          var template = template.HTML(title, list, 
+          var html = template.HTML(title, list, 
           `
           <form action="/update_process">
             <input type="hidden" name = "id" value = "${title}">
@@ -156,7 +116,7 @@ var app = http.createServer(function(request,response){
           `,
           `<a href = "/create">create</a><a href = "/update?id=${title}"> updata</a>`);
           response.writeHead(200);
-          response.end(template);
+          response.end(html);
         });
       });
     } else if(pathname === '/update_process'){
@@ -164,7 +124,6 @@ var app = http.createServer(function(request,response){
       // 웹브라우저가
       request.on('./data',function(data){
         body = body + data;
-        console.log('why');
       });
       request.on('end',function(){
         var post = qs.parse(body);
@@ -185,7 +144,6 @@ var app = http.createServer(function(request,response){
       // 웹브라우저가
       request.on('./data',function(data){
         body = body + data;
-        console.log('why');
       });
       request.on('end',function(){
         var post = qs.parse(body);
